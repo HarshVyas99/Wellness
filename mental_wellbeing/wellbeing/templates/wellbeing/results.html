@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Results{% endblock %}
+
+{% block content %}
+<h1>Your Quiz Results</h1>
+<div class="card mt-4">
+    <div class="card-body">
+        <h4 class="card-title">Your Score: {{ score }}</h4>
+        <p class="card-text">Based on your score, here's our recommendation:</p>
+        <blockquote class="blockquote">
+            <p class="mb-0">{{ recommendation }}</p>
+        </blockquote>
+        <footer class="blockquote-footer">Mental Wellness Platform</footer>
+    </div>
+</div>
+
+<a href="{% url 'quiz' %}" class="btn btn-primary mt-4">Take Another Quiz</a>
+<a href="{% url 'profile' %}" class="btn btn-secondary mt-4">View Your Profile</a>
+{% endblock %}

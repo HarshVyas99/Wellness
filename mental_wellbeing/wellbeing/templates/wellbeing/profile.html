@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<h1>Welcome, {{ user.username }}</h1>
+<div class="card">
+    <div class="card-body">
+        <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+        <p class="card-text"><strong>Date Joined:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+    </div>
+</div>
+
+<h2 class="mt-4">Your Mood Tracking History</h2>
+{% if results %}
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Recommendation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result.date|date:"F j, Y" }}</td>
+                <td>{{ result.score }}</td>
+                <td>{{ result.recommendation }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>You haven't completed any quizzes yet. Start now!</p>
+{% endif %}
+{% endblock %}
