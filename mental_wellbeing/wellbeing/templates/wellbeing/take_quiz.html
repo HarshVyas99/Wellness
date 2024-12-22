@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if quiz %}        
+        <form action="{% url 'submit_quiz' quiz.id %}" method="POST" class="quiz-form">
+            {% csrf_token %}
+            
+            <div class="quiz-questions">
+                {% for question in quiz.questions.all %}
+                    <div class="mb-4">
+                        <h3>{{ question.text }}</h3>
+                        
+                        {% for option in question.options.all %}
+                            <div class="form-check">
+                                <input 
+                                    type="radio" 
+                                    name="question_{{ question.id }}" 
+                                    value="{{ option.id }}" 
+                                    class="form-check-input" 
+                                    id="option_{{ option.id }}" 
+                                    required>
+                                <label class="form-check-label" for="option_{{ option.id }}">
+                                    {{ option.text }} (Rating: {{ option.rating }})
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary btn-lg">Submit Quiz</button>
+            </div>
+        </form>
+
+    {% else %}
+        <p class="text-center text-muted">No quizzes available at the moment.</p>
+    {% endif %}
+</div>
+
+{% block style %}
+<style>
+    /* Form Layout and Question Styling */
+    .quiz-form {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .quiz-questions {
+        margin-bottom: 2rem;
+    }
+
+    .quiz-questions h3 {
+        color: #6f42c1;
+        font-size: 1.2rem;
+    }
+
+    .form-check {
+        margin-bottom: 1rem;
+    }
+
+    .form-check-label {
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background-color: #6f42c1;
+        border-color: #6f42c1;
+        font-size: 1.2rem;
+    }
+
+    .btn-primary:hover {
+        background-color: #5a3e9d;
+        border-color: #5a3e9d;
+    }
+</style>
+{% endblock %}
+
+{% endblock %}

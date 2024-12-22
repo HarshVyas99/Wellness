@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Inbox</h1>
+
+    <!-- Conversations Table -->
+    <div class="table-container">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Last Updated</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conversation in user_conversations %}
+                <tr>
+                    <td>{{ conversation.user.username }}</td>
+                    <td>{{ conversation.last_updated|date:"d M Y, H:i" }}</td>
+                    <td>
+                        <a href="{% url 'client_conversation_detail' conversation.id %}" class="btn btn-primary">Open Chat</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="no-conversations">No active conversations</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% block css %}
+<style>
+    /* Keeping the default hero and color theme from base.html intact */
+
+    .table-container {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .table th {
+        background-color: #2980b9; /* Matching theme */
+        color: white;
+    }
+
+    .table td {
+        background-color: #fff;
+    }
+
+    .btn-primary {
+        background-color: #6f42c1;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #5a3e9d; /* Darker purple on hover */
+    }
+
+    .no-conversations {
+        text-align: center;
+        font-size: 1.2rem;
+        color: #777;
+    }
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Quiz Result: {{ quiz.title }}</h1>
+    <p>Your Total Score: {{ total_score }}</p>
+
+    {% if recommendation %}
+        <h2>Recommendation</h2>
+        <p>{{ recommendation.text }}</p>
+    {% else %}
+        <p>No recommendation available for your score.</p>
+    {% endif %}
+    {% endblock %}

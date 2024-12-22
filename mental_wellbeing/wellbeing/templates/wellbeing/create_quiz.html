@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Create a Quiz</h1>
+<form id="quiz-form">
+    <label for="quiz_title">Quiz Title:</label>
+    <input type="text" name="quiz_title" id="quiz_title" required><br><br>
+
+    <label for="active_from">Active From (Date):</label>
+    <input type="date" name="active_from" id="active_from"><br><br>
+
+    <div id="questions-container">
+        <h2>Questions</h2>
+        <button type="button" onclick="addQuestion()">Add Question</button>
+    </div>
+
+    <div id="recommendations-container">
+        <h2>Overall Recommendations</h2>
+        <button type="button" onclick="addRecommendation()">Add Recommendation</button>
+    </div>
+
+    <button type="submit">Save Quiz</button>
+</form>
+
+<script>
+    let questionCount = 0;
+    let recommendationCount = 0;
+
+    function addQuestion() {
+        questionCount++;
+        const questionDiv = document.createElement("div");
+        questionDiv.id = `question_${questionCount}`;
+        questionDiv.innerHTML = `
+            <h3>Question ${questionCount}</h3>
+            <label>Question Text:</label>
+            <input type="text" name="question_${questionCount}_text" required><br>
+            <button type="button" onclick="addOption(${questionCount})">Add Option</button>
+            <div id="question_${questionCount}_options"></div>
+        `;
+        document.getElementById("questions-container").appendChild(questionDiv);
+    }
+
+    function addOption(questionId) {
+        const optionsDiv = document.getElementById(`question_${questionId}_options`);
+        const optionCount = optionsDiv.children.length + 1;
+        const optionDiv = document.createElement("div");
+        optionDiv.innerHTML = `
+            <label>Option ${optionCount} Text:</label>
+            <input type="text" name="question_${questionId}_option_${optionCount}_text" required>
+            <label>Rating:</label>
+            <input type="number" name="question_${questionId}_option_${optionCount}_rating" required><br>
+        `;
+        optionsDiv.appendChild(optionDiv);
+    }
+
+    function addRecommendation() {
+        recommendationCount++;
+        const recommendationDiv = document.createElement("div");
+        recommendationDiv.id = `recommendation_${recommendationCount}`;
+        recommendationDiv.innerHTML = `
+            <h3>Recommendation ${recommendationCount}</h3>
+            <label>Min Score:</label>
+            <input type="number" name="recommendation_${recommendationCount}_min_score" required>
+            <label>Max Score:</label>
+            <input type="number" name="recommendation_${recommendationCount}_max_score" required>
+            <label>Text:</label>
+            <textarea name="recommendation_${recommendationCount}_text" required></textarea>
+        `;
+        document.getElementById("recommendations-container").appendChild(recommendationDiv);
+    }
+
+    $("#quiz-form").on("submit", function(e) {
+        e.preventDefault();
+        const formData = $(this).serializeArray();
+
+        // Add question counts and option counts dynamically
+        formData.push({ name: "question_count", value: questionCount });
+        for (let i = 1; i <= questionCount; i++) {
+            const optionCount = $(`#question_${i}_options > div`).length;
+            formData.push({ name: `question_${i}_option_count`, value: optionCount });
+        }
+
+        // Add recommendation count dynamically
+        formData.push({ name: "recommendation_count", value: recommendationCount });
+
+        $.ajax({
+            url: "{% url 'save_quiz' %}",
+            type: "POST",
+            data: formData,
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function(response) {
+                alert(response.message);
+                if (response.success) {
+                    location.reload();
+                }
+            },
+            error: function() {
+                alert("An error occurred while saving the quiz.");
+            }
+        });
+    });
+</script>
+{% endblock %}

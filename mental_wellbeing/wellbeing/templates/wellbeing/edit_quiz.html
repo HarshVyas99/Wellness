@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Edit Quiz: {{ quiz.title }}</h1>
+
+<form id="quiz-form" method="POST" action="{% url 'update_quiz' quiz.pk %}">
+    {% csrf_token %}
+    
+    <!-- Quiz Title -->
+    <label for="quiz_title">Quiz Title:</label>
+    <input type="text" name="quiz_title" id="quiz_title" value="{{ quiz.title }}" required><br><br>
+
+    <!-- Created at field (read-only) -->
+    <label for="created_at">Created At:</label>
+    <input type="text" id="created_at" value="{{ quiz.created_at }}" readonly><br><br>
+
+    <!-- Active from field -->
+    <label for="active_from">Active From (Date):</label>
+    <input type="date" name="active_from" id="active_from" value="{{ quiz.active_from|date:'Y-m-d' }}"><br><br>
+
+    <!-- Questions Container -->
+    <div id="questions-container">
+        {% for question in quiz.questions.all %}
+            <div id="question_{{ question.id }}">
+                <h3>Question {{ forloop.counter }}</h3>
+                <input type="hidden" name="question_{{ question.id }}_id" value="{{ question.id }}">
+                <label>Question Text:</label>
+                <input type="text" name="question_{{ question.id }}_text" value="{{ question.text }}" required><br><br>
+
+                <!-- Options for Question -->
+                <div id="question_{{ question.id }}_options">
+                    {% for option in question.options.all %}
+                        <div>
+                            <input type="hidden" name="question_{{ question.id }}_option_{{ option.id }}_id" value="{{ option.id }}">
+                            <label>Option {{ forloop.counter }} Text:</label>
+                            <input type="text" name="question_{{ question.id }}_option_{{ option.id }}_text" value="{{ option.text }}" required><br>
+
+                            <label>Rating:</label>
+                            <input type="number" name="question_{{ question.id }}_option_{{ option.id }}_rating" value="{{ option.rating }}" min="1" max="10" required><br><br>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" onclick="addOption({{ question.id }})">Add Option</button><br><br>
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="button" onclick="addQuestion()">Add Question</button><br><br>
+
+    <div id="recommendations-container">
+        {% for recommendation in quiz.recommendations.all %}
+            <div>
+                <input type="hidden" name="recommendation_{{ recommendation.id }}_id" value="{{ recommendation.id }}">
+                <label>Min Score:</label>
+                <input type="number" name="recommendation_{{ recommendation.id }}_min_score" value="{{ recommendation.min_score }}" required><br>
+
+                <label>Max Score:</label>
+                <input type="number" name="recommendation_{{ recommendation.id }}_max_score" value="{{ recommendation.max_score }}" required><br>
+
+                <label>Text:</label>
+                <textarea name="recommendation_{{ recommendation.id }}_text" required>{{ recommendation.text }}</textarea><br><br>
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="button" onclick="addRecommendation()">Add Recommendation</button><br><br>
+
+    <button type="submit">Save Changes</button>
+</form>
+
+    <script>
+        // Adding a new Question
+        function addQuestion() {
+            var questionCount = document.getElementById('questions-container').children.length + 1;
+            var newQuestionHTML = `
+                <div id="question_${questionCount}">
+                    <h3>Question ${questionCount}</h3>
+                    <input type="hidden" name="question_${questionCount}_id">
+                    <label>Question Text:</label>
+                    <input type="text" name="question_${questionCount}_text" required><br><br>
+                    
+                    <div id="question_${questionCount}_options"></div>
+                    
+                    <button type="button" onclick="addOption(${questionCount})">Add Option</button><br><br>
+                </div>
+            `;
+            document.getElementById('questions-container').insertAdjacentHTML('beforeend', newQuestionHTML);
+        }
+
+        // Adding a new Option to a Question
+        function addOption(questionId) {
+            var optionCount = document.getElementById(`question_${questionId}_options`).children.length + 1;
+            var newOptionHTML = `
+                <div>
+                    <input type="hidden" name="question_${questionId}_option_${optionCount}_id">
+                    <label>Option ${optionCount} Text:</label>
+                    <input type="text" name="question_${questionId}_option_${optionCount}_text" required><br>
+
+                    <label>Rating:</label>
+                    <input type="number" name="question_${questionId}_option_${optionCount}_rating" min="1" max="10" required><br><br>
+                </div>
+            `;
+            document.getElementById(`question_${questionId}_options`).insertAdjacentHTML('beforeend', newOptionHTML);
+        }
+
+        // Adding a new Recommendation
+        function addRecommendation() {
+            var recommendationCount = document.getElementById('recommendations-container').children.length + 1;
+            var newRecommendationHTML = `
+                <div>
+                    <input type="hidden" name="recommendation_${recommendationCount}_id">
+                    <label>Min Score:</label>
+                    <input type="number" name="recommendation_${recommendationCount}_min_score" required><br>
+
+                    <label>Max Score:</label>
+                    <input type="number" name="recommendation_${recommendationCount}_max_score" required><br>
+
+                    <label>Text:</label>
+                    <textarea name="recommendation_${recommendationCount}_text" required></textarea><br><br>
+                </div>
+            `;
+            document.getElementById('recommendations-container').insertAdjacentHTML('beforeend', newRecommendationHTML);
+        }
+    </script>
+{% endblock %}

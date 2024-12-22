@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block style %}
+<style>
+    /* Chat Box Styling */
+.chat-box {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.chat-box:hover {
+    background-color: #f1f1f1;
+}
+
+/* Message Sent (Right aligned) */
+.message-sent {
+    text-align: right;
+    margin-bottom: 15px;
+    color: #2980b9; /* Fitness blue */
+}
+
+.message-sent p {
+    background-color: #e6f4ff;
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 70%;
+    margin: 0;
+}
+
+.message-sent small {
+    display: block;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+/* Message Received (Left aligned) */
+.message-received {
+    text-align: left;
+    margin-bottom: 15px;
+    color: #2ecc71; /* Wellness green */
+}
+
+.message-received p {
+    background-color: #d5f8e2;
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 70%;
+    margin: 0;
+}
+
+.message-received small {
+    display: block;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+/* Input Form Styling */
+.input-group {
+    margin-top: 20px;
+}
+
+.input-group input {
+    border-radius: 30px;
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-right: 10px;
+}
+
+.input-group button {
+    border-radius: 30px;
+    background-color: #2980b9;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+
+.input-group button:hover {
+    background-color: #3498db;
+}
+
+/* Page Title */
+h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2980b9; /* Fitness blue */
+    text-align: center;
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .message-sent p, .message-received p {
+        max-width: 90%;
+    }
+    .input-group {
+        flex-direction: column;
+    }
+    .input-group input {
+        margin-bottom: 10px;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Chat Page Container -->
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Chat with Doctor</h2>
+
+    <!-- Chat Box -->
+    <div id="chat-box" class="chat-box">
+        {% for message in conversation.messages.all %}
+        <div class="{% if message.sender == user %} message-sent {% else %} message-received {% endif %}">
+            <p><strong>{{ message.sender.username }}</strong>: {{ message.content }}</p>
+            <small>{{ message.timestamp }}</small>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Message Input Form -->
+    <form id="message-form" method="post" action="{% url 'send_message' conversation.id %}">
+        {% csrf_token %}
+        <div class="input-group mt-3">
+            <input type="text" id="message-input" name="text" class="form-control" placeholder="Type your message" required>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const conversationId = "{{ conversation.id }}";
+    let lastMessageId = "{% if conversation.messages.exists %} {{ conversation.messages.last.id }} {% else %} 0 {% endif %}";
+
+    function fetchNewMessages() {
+        fetch(`/chat/${conversationId}/fetch_messages/?last_message_id=${lastMessageId}`)
+            .then(response => response.json())
+            .then(data => {
+                const messages = data.messages;
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add(message.sender === "{{ user.username }}" ? 'message-sent' : 'message-received');
+                    messageDiv.innerHTML = `<p><strong>${message.sender}</strong>: ${message.text}</p><small>${message.timestamp}</small>`;
+                    chatBox.appendChild(messageDiv);
+                });
+                if (messages.length > 0) {
+                    lastMessageId = messages[messages.length - 1].id;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            });
+    }
+
+    document.getElementById('message-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const messageInput = document.getElementById('message-input');
+        const content = messageInput.value.trim();
+        if (content) {
+            fetch(`/send-message/${conversationId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: JSON.stringify({'message': content}),
+            }).then(response => response.json()).then(() => {
+                messageInput.value = '';
+                fetchNewMessages();
+            });
+        }
+    });
+
+    setInterval(fetchNewMessages, 3000);
+</script>
+
+{% endblock %}

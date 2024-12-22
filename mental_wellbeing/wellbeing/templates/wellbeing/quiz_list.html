@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>All Quizzes</h1>
+
+    <ul>
+        {% for quiz in quizzes %}
+            <li>
+                <strong>{{ quiz.title }}</strong><br>
+                 Created at : {{ quiz.created_at }}<br>
+                 Active from : {{ quiz.active_from }}<br>
+                <!-- Modify button for each quiz -->
+                <a href="{% url 'edit_quiz' quiz.id %}">Modify</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'create_quiz' %}">Create New Quiz</a>
+    {% endblock %}

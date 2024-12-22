@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load custom_template_tags %}
+
+{% block content %}
+<!-- Conversation Page Container -->
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Chat with {% conversation_with conversation request.user.id %}</h1>
+
+    <!-- Chat Box -->
+    <div id="chat-box" class="chat-box">
+        {% for message in conversation.messages.all %}
+        <div class="{% if message.sender == user %} message-sent {% else %} message-received {% endif %}">
+            <p><strong>{{ message.sender.username }}</strong>: {{ message.content }}</p>
+            <small>{{ message.timestamp }}</small>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Message Input Form -->
+    <form id="message-form" method="post" action="{% url 'send_message' conversation.id %}">
+        {% csrf_token %}
+        <div class="input-group mt-3">
+            <input type="text" id="message-input" name="text" class="form-control" placeholder="Type your message" required>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>
+</div>
+
+{% block style %}
+<style>
+
+    .container {
+        max-width: 800px;
+    }
+
+    .chat-box {
+        height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+
+    .message-sent {
+        text-align: right;
+        background-color: #d9fdd3;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+    }
+
+    .message-received {
+        text-align: left;
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .input-group input {
+        flex: 1;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 1rem;
+    }
+
+    .input-group button {
+        background-color: #2980b9; /* Soft purple */
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 10px 20px;
+    }
+
+    .input-group button:hover {
+        background-color:rgb(34, 120, 177); /* Darker purple */
+    }
+
+    small {
+        font-size: 0.8rem;
+        color: #777;
+    }
+</style>
+{% endblock %}
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const conversationId = "{{ conversation.id }}";
+    let lastMessageId = "{% if conversation.messages.exists %} {{ conversation.messages.last.id }} {% else %} 0 {% endif %}";
+
+    function fetchNewMessages() {
+        fetch(`/chat/${conversationId}/fetch_messages/?last_message_id=${lastMessageId}`)
+            .then(response => response.json())
+            .then(data => {
+                const messages = data.messages;
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add(message.sender === "{{ user.username }}" ? 'message-sent' : 'message-received');
+                    messageDiv.innerHTML = `<p><strong>${message.sender}</strong>: ${message.text}</p><small>${message.timestamp}</small>`;
+                    chatBox.appendChild(messageDiv);
+                });
+                if (messages.length > 0) {
+                    lastMessageId = messages[messages.length - 1].id;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            });
+    }
+
+    document.getElementById('message-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const messageInput = document.getElementById('message-input');
+        const content = messageInput.value.trim();
+        if (content) {
+            fetch("{% url 'send_message' conversation.id %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({'message': content})
+            }).then(response => response.json()).then(() => {
+                messageInput.value = '';
+                fetchNewMessages();
+            });
+        }
+    });
+
+    setInterval(fetchNewMessages, 3000);
+</script>
+
+{% endblock %}
