@@ -358,4 +358,7 @@ def quiz_for_today(request):
         return render(request, "wellbeing/take_quiz.html", {"quiz": quiz})
     else:
         # No quiz available
-        return render(request, "wellbeing/take_quiz.html",)
+        return render(request, "wellbeing/take_quiz.html")
+ 
+def about_us(request):
+    return render(request, 'wellbeing/about_us.html')
