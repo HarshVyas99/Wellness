@@ -2,113 +2,112 @@
 {% block style %}
 <style>
     /* Chat Box Styling */
-.chat-box {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
-}
-
-.chat-box:hover {
-    background-color: #f1f1f1;
-}
-
-/* Message Sent (Right aligned) */
-.message-sent {
-    text-align: right;
-    margin-bottom: 15px;
-    color: #2980b9; /* Fitness blue */
-}
-
-.message-sent p {
-    background-color: #e6f4ff;
-    display: inline-block;
-    padding: 10px 15px;
-    border-radius: 20px;
-    max-width: 70%;
-    margin: 0;
-}
-
-.message-sent small {
-    display: block;
-    font-size: 0.8rem;
-    color: #777;
-}
-
-/* Message Received (Left aligned) */
-.message-received {
-    text-align: left;
-    margin-bottom: 15px;
-    color: #2ecc71; /* Wellness green */
-}
-
-.message-received p {
-    background-color: #d5f8e2;
-    display: inline-block;
-    padding: 10px 15px;
-    border-radius: 20px;
-    max-width: 70%;
-    margin: 0;
-}
-
-.message-received small {
-    display: block;
-    font-size: 0.8rem;
-    color: #777;
-}
-
-/* Input Form Styling */
-.input-group {
-    margin-top: 20px;
-}
-
-.input-group input {
-    border-radius: 30px;
-    padding: 10px 20px;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-right: 10px;
-}
-
-.input-group button {
-    border-radius: 30px;
-    background-color: #2980b9;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-}
-
-.input-group button:hover {
-    background-color: #3498db;
-}
-
-/* Page Title */
-h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #2980b9; /* Fitness blue */
-    text-align: center;
-}
-
-/* Mobile Optimization */
-@media (max-width: 768px) {
-    .message-sent p, .message-received p {
-        max-width: 90%;
+    .chat-box {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ddd; /* Lighter border */
+        padding: 20px;
+        background-color: #ffffff; /* White background */
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
     }
+
+    .chat-box:hover {
+        background-color: #f8f9fa; /* Light gray on hover */
+    }
+
+    /* Message Sent (Right aligned) */
+    .message-sent {
+        text-align: right;
+        margin-bottom: 15px;
+        color: #007bff; /* Bootstrap primary color */
+    }
+
+    .message-sent p {
+        background-color: #e6f4ff; /* Light blue background */
+        display: inline-block;
+        padding: 10px 15px;
+        border-radius: 20px;
+        max-width: 70%;
+        margin: 0;
+    }
+
+    .message-sent small {
+        display: block;
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    /* Message Received (Left aligned) */
+    .message-received {
+        text-align: left;
+        margin-bottom: 15px;
+        color: #28a745; /* Bootstrap success color */
+    }
+
+    .message-received p {
+        background-color: #d5f8e2; /* Light green background */
+        display: inline-block;
+        padding: 10px 15px;
+        border-radius: 20px;
+        max-width: 70%;
+        margin: 0;
+    }
+
+    .message-received small {
+        display: block;
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    /* Input Form Styling */
     .input-group {
-        flex-direction: column;
+        margin-top: 20px;
     }
-    .input-group input {
-        margin-bottom: 10px;
-    }
-}
 
+    .input-group input {
+        border-radius: 30px;
+        padding: 10px 20px;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-right: 10px;
+    }
+
+    .input-group button {
+        border-radius: 30px;
+        background-color: #007bff; /* Bootstrap primary color */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .input-group button:hover {
+        background-color: #0056b3; /* Darker shade of primary color */
+    }
+
+    /* Page Title */
+    h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #007bff; /* Bootstrap primary color */
+        text-align: center;
+    }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+        .message-sent p, .message-received p {
+            max-width: 90%;
+        }
+        .input-group {
+            flex-direction: column;
+        }
+        .input-group input {
+            margin-bottom: 10px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -138,7 +137,7 @@ h2 {
 </div>
 
 <script>
-    const chatBox = document.getElementById('chat-box');
+    const chatBox = document.getElementByID('chat-box');
     const conversationId = "{{ conversation.id }}";
     let lastMessageId = "{% if conversation.messages.exists %} {{ conversation.messages.last.id }} {% else %} 0 {% endif %}";
 

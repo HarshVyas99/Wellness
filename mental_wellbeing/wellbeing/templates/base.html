@@ -3,61 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}WellMind{% endblock %}</title>
+    <title>{% block title %}Zenvibe{% endblock %}</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% load static %}
     {% load custom_template_tags %}
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #f4f6f9; /* Light gray background for a clean look */
+            background-color: #f8f9fa; /* Very light gray background */
             margin: 0;
-            padding-top: 56px;
-            color: #333;
+            padding-top: 70px; /* Adjusted for better spacing with navbar */
+            color: #343a40; /* Dark gray text */
         }
 
         /* Navbar Styling */
         .navbar {
-            background-color: white;
+            background-color: #cfe2f3; /* Light blue navbar */
             transition: background-color 0.3s;
-            position: fixed;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .navbar.scrolled {
-            background-color: #fff;
-        }
+
         .navbar .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
-            color: #2c3e50; /* Dark gray */
+            color: #343a40; /* Dark gray brand text */
         }
+
         .nav-link {
-            color: #2980b9; /* Fitness blue */
+            color: #343a40; /* Dark gray link text */
             transition: color 0.3s;
         }
+
         .nav-link:hover {
-            color: #3498db; /* Lighter blue */
+            color: #90a4ba; /* Slightly darker blue on hover */
+        }
+        .navbar-dark .navbar-toggler-icon{
+          filter: invert(1);
         }
 
         /* Hero Section */
         .hero {
-            background-color: #2980b9; /* Fitness-themed blue */
-            height: 250px;
+            background-size: cover;
+            background-position: center;
+            height: 300px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: white;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
-            margin-top: 56px; /* For navbar */
+            color: #343a40; /* Set default text color to dark gray */
+            text-shadow: none; /* Remove text shadow */
+            margin-top: 56px;
+        }
+
+        .hero-logo {
+            max-width: 200px;
+            margin-bottom: 1rem;
         }
 
         .hero h1 {
             font-size: 2.5rem;
             font-weight: 700;
             text-align: center;
+        }
+        .hero p{
+          font-size: 1.2rem;
+          max-width: 800px;
+          text-align: center;
+        }
+
+        .hero h1, .hero p {
+            color: inherit; /* Inherit color from the hero container */
         }
 
         /* Content Section */
@@ -66,55 +85,83 @@
         }
 
         .content {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
+            padding: 20px;
         }
 
         .card {
             border: none;
             border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            background-color: white;
-            transition: transform 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            overflow: hidden;
+            cursor: pointer;
         }
+
         .card:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
+
         .card img {
             border-radius: 12px 12px 0 0;
             width: 100%;
             height: 200px;
             object-fit: cover;
         }
+
         .card-body {
             padding: 15px;
         }
+
         .card-title {
             font-size: 1.2rem;
             font-weight: 600;
         }
+
         .card-text {
             font-size: 0.9rem;
-            color: #777;
+            color: #6c757d;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
         }
+
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+  
 
         /* Footer */
         .footer {
-            background-color: #fff;
+            background-color: #cfe2f3;
             text-align: center;
             padding: 20px;
-            position: relative;
-            bottom: 0;
             width: 100%;
-            box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+            color: #343a40;
+            border-top: 1px solid #ddd; /* Subtle border */
         }
-        .footer p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: #2980b9; /* Fitness blue */
+
+        .btn-primary {
+            background-color: #90a4ba; /* Use a color that fits the theme */
+            border-color: #90a4ba;
+            color: white; /* Ensure good contrast */
+        }
+
+        .btn-primary:hover {
+            background-color: #78909c; /* Darker shade on hover */
+            border-color: #78909c;
+        }
+
+        .btn-primary:focus, .btn-primary:active {
+            box-shadow: 0 0 0 0.25rem rgba(144, 164, 186, 0.5); /* Matching focus ring */
         }
 
         /* Mobile & Tablet Optimization */
@@ -134,10 +181,9 @@
     {% endblock %}
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'quiz_for_today' %}">Wellness Platform</a>
+            <a class="navbar-brand" href="{% url 'about_us' %}">Zenvibe</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -149,7 +195,7 @@
                             <a class="nav-link" href="{% url 'doctor_inbox' %}">Inbox</a>
                         </li>
                         {% endif %}
-                        {% if user|is_admin or user.is_superuser %}
+                        {% if user.is_superuser %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'quiz_list' %}">Quiz Store</a>
                         </li>
@@ -163,17 +209,23 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'feed' %}">Feed</a>
                         </li>
-                        {% if user|is_doctor == False %}
+                        {% if not user|is_doctor %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'active_doctors' %}">Chat with Doctor</a>
                         </li>
                         {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'about_us' %}">About Us</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'about_us' %}">About Us</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'register' %}">Register</a>
@@ -184,19 +236,19 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <div class="hero">
-        <h1>Welcome to WellMind</h1>
+        <img class="hero-logo" src="{% static 'images/logo.png' %}" alt="Zenvibe Logo">
+        <h1>Zenvibe: Your Feel-Good Companion</h1>
+        <p>Discover a path to mental wellness with personalized insights, expert guidance, and a supportive community. Zenvibe is here to help you understand your emotions, develop coping strategies, and find your inner peace.</p>
     </div>
 
-    <!-- Content Section -->
     <div class="container mt-5">
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% endblock %}
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2024 WellMind. All rights reserved.</p>
+    <footer class="footer mt-5">
+        <p>&copy; 2024 Zenvibe. All rights reserved.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

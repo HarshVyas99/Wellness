@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Zenvibe - Your Feel-Good Companion{% endblock %}
+
+{% block style %}
+<style>
+  .feature-section {
+    padding: 4rem 0;
+  }
+
+  .feature-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    overflow: hidden;
+    background-color: white;
+    padding: 2rem;
+    text-align: center;
+    min-height: 250px; /* Consistent card height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .feature-card i{
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #2980b9;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px); /* Subtle lift on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .feature-card h3 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="feature-section bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <a href="{% url 'quiz_for_today' %}" class="card-link">
+                <div class="feature-card">
+                  <i class="fa-solid fa-masks-theater"></i>
+                    <h3>Mood Magic</h3>
+                    <p>Our AI-powered emotion tracer decodes your vibes and delivers personalized insights.</p>
+                </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'active_doctors' %}" class="card-link">
+                <div class="feature-card">
+                  <i class="fas fa-user-md"></i>
+                    <h3>Wellness Wingman</h3>
+                    <p>Work one-on-one with certified therapists and coaches for a personalized wellness plan.</p>
+                </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'feed' %}" class="card-link">
+                <div class="feature-card">
+                  <i class="fas fa-users"></i>
+                    <h3>Join the Vibe Tribe</h3>
+                    <p>Connect with a supportive community, participate in workshops, and share your journey.</p>
+                </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'profile' %}" class="card-link">
+                <div class="feature-card">
+                  <i class="fas fa-leaf"></i>
+                    <h3>Chill and Recharge</h3>
+                    <p>Relax with guided meditations, breathing exercises, and calming techniques.</p>
+                </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

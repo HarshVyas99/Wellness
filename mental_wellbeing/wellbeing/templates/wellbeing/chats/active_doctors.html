@@ -33,7 +33,7 @@
 }
 
 .btn-primary {
-    background-color: #2980b9; /* Fitness blue */
+    background-color: #90a4ba; /* Fitness blue */
     border: none;
     color: white;
     padding: 10px 20px;
@@ -44,7 +44,7 @@
 }
 
 .btn-primary:hover {
-    background-color: #3498db; /* Lighter blue */
+    background-color: #78909c; /* Lighter blue */
 }
 
 
@@ -70,6 +70,7 @@
         {% for doctor in doctors %}
         <div class="card">
             <div class="card-body">
+                <i class="fa-regular fa-user"></i>
                 <h5 class="card-title">{{ doctor.username }}</h5>
                 <a href="{% url 'conversation_detail' doctor.id %}" class="btn btn-primary">Start Conversation</a>
             </div>
