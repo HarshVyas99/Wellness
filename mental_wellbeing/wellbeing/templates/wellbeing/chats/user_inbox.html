@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load custom_template_tags %}
+{% load static %}
+{% block style %}
+<style>
+    .user-avatar img {
+        width: 40px;  /* Set width */
+        height: 40px;  /* Set height */
+        object-fit: cover;  /* Ensure the image maintains aspect ratio */
+        border-radius: 50%;  /* Make it circular */
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<div class="container my-5">
+
+    <div class="list-group">
+        {% for conversation in conversations_with_last_message %}
+        {% with users=conversation.conversation.participants.all %}
+        {% for conversation_user in users %}
+            {% if conversation_user != user %}
+            <a href="{% url 'user_conversation_detail' conversation.conversation.id %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                <div class="user-avatar">
+                    {% if user|recently_active_users %}
+                    <i class="fa-solid fa-circle fa-2xs" style="color: #04f1aa;"></i>
+                    {% else %}
+                    <i class="fa-solid fa-circle fa-2xs" style="color: #e60f6c;"></i>
+                    {% endif %}
+                    {% if conversation_user.profile.profile_picture %}
+                        <img src="{{ conversation_user.profile.profile_picture.url }}" alt="User Avatar" class="avatar-img">
+                    {% else %}
+                        <i class="fas fa-user-circle avatar-icon"></i>
+                    {% endif %}
+                </div>
+                <div class="message-info ml-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ conversation_user.username }}</strong>
+                    </div>
+                    <p class="last-message {% if conversation.last_message.read == False %}font-weight-bold{% endif %}">
+                        {{ conversation.last_message.content|truncatewords:10 }}
+                    </p>
+                    <small class="text-muted">{{ conversation.last_message.timestamp|date:"M j, Y, g:i a" }}</small>
+                </div>
+                {% if conversation.unread_count > 0 %}
+                    <span class="badge badge-danger ml-auto">{{ conversation.unread_count }}</span>
+                {% endif %}
+            </a>
+        {% endif %}
+        {% endfor %}
+        {% endwith %}
+        {% empty %}
+            <p>No conversations available</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

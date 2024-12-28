@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <h2>Contact Us</h2>
+    <p>Enter your email below, and we will get in touch with you shortly.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
+</div>
+{% endblock %}

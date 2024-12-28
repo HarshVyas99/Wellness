@@ -5,13 +5,17 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from wellbeing.models import Recommendation, QuizResponse, Post, Conversation, Message, UserQuizResult
-from wellbeing.forms import RegistrationForm, PostForm
+from wellbeing.models import Recommendation, QuizResponse, Post, Conversation, Message, UserQuizResult, ContactEmail, MentalWellbeingContent
+from wellbeing.forms import RegistrationForm, PostForm, ProfileForm, ContactEmailForm
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from wellbeing.utils import get_or_create_conversation, get_active_doctors
 import re
 from django.utils.timezone import now
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.conf import settings
+from django.core.paginator import Paginator
 
 # Questionnaire and scoring logic
 QUESTIONS = [
@@ -50,6 +54,25 @@ def register_view(request):
         form = RegistrationForm()
     return render(request, "wellbeing/register.html", {"form": form})
 
+def register_view(request):
+    if request.method == 'POST':
+        user_form = RegistrationForm(request.POST)
+        profile_form = ProfileForm(request.POST, request.FILES)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+            user_profile = profile_form.save(commit=False)
+            user_profile.user = user
+            user_profile.save()
+
+            login(request, user)  # Automatically log in the user after registration
+            return redirect('about_us')  # Redirect to the profile page (you can customize this)
+    else:
+        user_form = RegistrationForm()
+        profile_form = ProfileForm()
+
+    return render(request, 'wellbeing/register.html', {'user_form': user_form, 'profile_form': profile_form})
+
 # Quiz View
 @login_required
 def quiz_view(request):
@@ -69,23 +92,37 @@ def quiz_view(request):
 # User Profile
 @login_required
 def profile_view(request):
+    profile = request.user.profile  # Assuming user has a related Profile model
     user_quiz_results = UserQuizResult.objects.filter(user=request.user)
-    return render(request, 'wellbeing/profile.html', {'user_quiz_results': user_quiz_results})
+    # Check if the user is in edit mode
+    is_edit_mode = request.GET.get('edit', False)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)  # Pass the existing profile as instance
+        if form.is_valid():
+            form.save()  # Save the updated profile
+            return redirect('profile')  # Redirect to the same page after saving
+    else:
+        form = ProfileForm(instance=profile)  # Prepopulate the form with the current profile data
+
+    return render(request, 'wellbeing/profile.html', {'user_quiz_results': user_quiz_results, 'profile': profile, 'form': form, 'is_edit_mode': is_edit_mode})
 
 
 @login_required
 def feed_view(request):
-    posts = Post.objects.all().order_by('-created_at')
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
             post.save()
-            return redirect('feed')
+            return redirect('feed')  # Redirect to the same page after submission
     else:
         form = PostForm()
-    return render(request, 'wellbeing/feed.html', {'posts': posts, 'form': form})
+
+    # Fetch all posts for the feed
+    posts = Post.objects.all().order_by('-created_at')  # Latest posts first
+
+    return render(request, 'wellbeing/feed.html', {'form': form, 'posts': posts})
 
 @login_required
 def active_doctors(request):
@@ -362,3 +399,130 @@ def quiz_for_today(request):
  
 def about_us(request):
     return render(request, 'wellbeing/about_us.html')
+
+@login_required
+def online_users(request):
+    # Get all users except the logged-in user
+    users = User.objects.exclude(id=request.user.id)
+
+    # Get unread messages for the logged-in user
+    unread_messages = Message.objects.filter(conversation__participants=request.user, read=False)
+    unread_count = unread_messages.count()
+
+    return render(request, 'wellbeing/chats/online_users.html', {
+        'users': users,
+        'unread_count': unread_count,
+    })
+    
+@login_required
+def start_user_conversation(request, user_id):
+    # Get the user to start a conversation with
+    other_user = get_object_or_404(User, id=user_id)
+    # Check if a conversation already exists between the logged-in user and the other user
+    conversation, created = get_or_create_conversation([request.user.id,user_id])
+    # Mark all unread messages in this conversation as read
+    conversation.messages.filter(read=False).update(read=True)
+    messages = conversation.messages.order_by('timestamp')
+    return render(request, 'wellbeing/chats/conversation.html', {'conversation': conversation, 'messages': messages})
+
+@login_required
+def user_conversation_detail(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    conversation.messages.filter(read=False).update(read=True)
+    messages = conversation.messages.order_by('timestamp')
+    return render(request, 'wellbeing/chats/conversation.html', {'conversation': conversation, 'messages': messages})
+
+
+@login_required
+def user_inbox(request):
+    # Get all conversations the logged-in user is part of
+    conversations = Conversation.objects.filter(participants=request.user)
+
+    # Get the latest message for each conversation
+    conversations_with_last_message = []
+    for conversation in conversations:
+        last_message = conversation.messages.order_by('-timestamp').first()
+        conversations_with_last_message.append({
+            'conversation': conversation,
+            'last_message': last_message,
+            'unread_count': conversation.messages.filter(read=False).count(),
+        })
+
+    return render(request, 'wellbeing/chats/user_inbox.html', {
+        'conversations_with_last_message': conversations_with_last_message,
+    })
+    
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactEmailForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+
+            # Save to database (optional)
+            ContactEmail.objects.create(email=email)
+
+            # Send email
+            send_mail(
+                subject='Zenvibe: Thank you for contacting us!',
+                # If you have any doubt or queries please call us at.
+                message=f'''We will get back to you soon.
+                If you have any doubt or queries please contact us at {settings.SUPPORT_NUMBER}.
+                ''' ,
+                from_email='Zenvibe Admin Account <zenvibeadmin@gmail.com>',
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            messages.success(request, "Email submitted successfully. Check your inbox for further updates!")
+            return redirect('about_us')    
+    else:
+        form = ContactEmailForm()
+
+    return render(request, 'wellbeing/contact_us.html', {'form': form})
+
+def disclaimer_view(request):
+    return render(request, 'wellbeing/disclaimer.html')
+
+@login_required
+def wellbeing_content_page(request):
+    # Get query parameters for search, filter, and sort
+    search_query = request.GET.get('search', None)
+    content_type_filter = request.GET.get('content_type', None)
+    sort_by = request.GET.get('sort_by', None)  # Default sorting by title
+    
+    # Filter content based on the query parameters
+    content = MentalWellbeingContent.objects.all()
+    
+    if search_query:
+        content = content.filter(title__icontains=search_query) | content.filter(description__icontains=search_query)
+    
+    if content_type_filter:
+        content = content.filter(content_type=content_type_filter)
+    
+    # Sorting
+    if sort_by == 'title':
+        content = content.order_by('title')
+    elif sort_by == 'content_type':
+        content = content.order_by('title')
+    elif sort_by == 'date':
+        content = content.order_by('-created_at')  # Assuming you have a created_at field
+    else:
+        content = content.order_by('-created_at')  # Assuming you have a created_at field
+    
+    if search_query is not None or content_type_filter is not None or sort_by is not None:
+        show_clear_filter=True
+    else:
+        show_clear_filter=False
+        
+    # Pagination setup
+    paginator = Paginator(content, 20)  # Show 20 articles per page
+    page_number = request.GET.get('page')  # Get the current page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the content for the current page
+        
+
+    return render(request, 'wellbeing/wellbeing_content.html', {
+        'wellbeing_content': page_obj,
+        'search_query': search_query,
+        'content_type_filter': content_type_filter,
+        'sort_by': sort_by,
+        'show_clear_filter':show_clear_filter,
+    })

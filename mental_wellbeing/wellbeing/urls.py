@@ -22,5 +22,12 @@ urlpatterns = [
     path('quiz/edit/<int:quiz_id>/', views.edit_quiz, name='edit_quiz'),
     path('quiz/update/<int:quiz_id>/', views.update_quiz, name='update_quiz'),
     path('participate/', views.quiz_for_today, name='quiz_for_today'),
+    path('community/', views.online_users, name='community'),
+    path('start-user-conversation/<int:user_id>/', views.start_user_conversation, name='start_conversation'),
+    path('user-conversation/<int:conversation_id>/', views.user_conversation_detail, name='user_conversation_detail'),
+    path('inbox/', views.user_inbox, name='user_inbox'),
+    path('contact-us/', views.contact_view, name='contact_us'),
+    path('wellbeing/', views.wellbeing_content_page, name='wellbeing_page'),
+    path('disclaimer/', views.disclaimer_view, name='disclaimer'),
     path('', views.about_us, name='about_us'),
 ]
