@@ -1,7 +1,15 @@
 {% extends 'base.html' %}
+{% load custom_template_tags %}
 {% block style %}
 <style>
     /* Content Section */
+
+.user-avatar img {
+    width: 40px;  /* Set width */
+    height: 40px;  /* Set height */
+    object-fit: cover;  /* Ensure the image maintains aspect ratio */
+    border-radius: 50%;  /* Make it circular */
+}
 .content {
     display: flex;
     flex-wrap: wrap;
@@ -63,16 +71,41 @@
 {% block content %}
 <!-- Heading Section -->
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Active Doctors</h1>
+    <h1 class="text-center mb-4">Active Therapists/Coaches</h1>
+    <p class="text-center mb-4"> Please connect with our certified therapists and coaches below. </p>
 
     <!-- Doctors List -->
     <div class="content">
         {% for doctor in doctors %}
         <div class="card">
             <div class="card-body">
-                <i class="fa-regular fa-user"></i>
-                <h5 class="card-title">{{ doctor.username }}</h5>
-                <a href="{% url 'conversation_detail' doctor.id %}" class="btn btn-primary">Start Conversation</a>
+                <div class="user-avatar">
+                    {% if doctor.profile.profile_picture %}
+                        <img src="{{ doctor.profile.profile_picture.url }}" alt="User Avatar" class="avatar-img">
+                        <h5 class="card-title">
+                            {% if user|recently_active_users %}
+                            <i class="fa-solid fa-circle fa-2xs" style="color: #04f1aa;"></i>
+                            {% else %}
+                            <i class="fa-solid fa-circle fa-2xs" style="color: #e60f6c;"></i>
+                            {% endif %}
+                            {{ doctor.username }}
+                        </h5>
+                        <p>{{ doctor.profile.bio}}</p>
+                        <a href="{% url 'conversation_detail' doctor.id %}" class="btn btn-primary">Start Conversation</a>
+                    {% else %}
+                    <i class="fa-regular fa-user"></i>
+                        <h5 class="card-title">
+                            {% if user|recently_active_users %}
+                            <i class="fa-solid fa-circle" style="color: #04f1aa;"></i>
+                            {% else %}
+                            <i class="fa-solid fa-circle" style="color: #e60f6c;"></i>
+                            {% endif %}
+                            {{ doctor.username }}
+                        </h5>
+                        <p>{{ doctor.profile.bio}}</p>
+                        <a href="{% url 'conversation_detail' doctor.id %}" class="btn btn-primary">Start Conversation</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endfor %}

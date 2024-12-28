@@ -44,7 +44,9 @@ class Result(models.Model):
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='posts/', blank=True, null=True)
+    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)
+    audio = models.FileField(upload_to='posts/audio/', blank=True, null=True)
+    video = models.FileField(upload_to='posts/videos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -64,6 +66,7 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     content = models.TextField()
     timestamp = models.DateTimeField(default=now)
+    read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.sender.username}: {self.content[:20]}"
@@ -113,3 +116,64 @@ class UserQuizResult(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.quiz.title} (Score: {self.score})"
+    
+from django.contrib.auth.models import User
+
+# Predefined set of interests (for example, hobbies)
+INTEREST_CHOICES = [
+    ('sports', 'Sports'),
+    ('music', 'Music'),
+    ('movies', 'Movies'),
+    ('technology', 'Technology'),
+    ('reading', 'Reading'),
+    ('traveling', 'Traveling'),
+    ('art', 'Art'),
+    ('gaming', 'Gaming'),
+]
+
+class Profile(models.Model):
+ 
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    birthdate = models.DateField(blank=True, null=True)
+    interests = models.CharField(
+        max_length=100, 
+        choices=INTEREST_CHOICES, 
+        blank=True, 
+        null=True
+    )
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+
+
+from django.db import models
+
+class ContactEmail(models.Model):
+    email = models.EmailField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+    
+class MentalWellbeingContent(models.Model):
+    CONTENT_TYPE_CHOICES = [
+        ('article', 'Article'),
+        ('self_care_tip', 'Self-care Tip'),
+        ('practice', 'Practice'),
+        ('resource', 'Resource'),
+        ('video', 'Video'),  # Add video content type
+    ]
+    
+    title = models.CharField(max_length=255)
+    content_type = models.CharField(max_length=20, choices=CONTENT_TYPE_CHOICES)
+    url = models.URLField(blank=True, null=True)  # URL for video or article link
+    description = models.TextField(blank=True, null=True)  # Description for breathing exercises
+    video_url=models.URLField(blank=True, null=True)  # URL for video or article link
+    video_file = models.FileField(upload_to='meditation_videos/', blank=True, null=True)  # For uploading videos directly
+    image = models.ImageField(upload_to='meditation_images/', blank=True, null=True)  # Optional image for breathing exercise
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

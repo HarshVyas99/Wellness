@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load custom_template_tags %}
+{% block style %}
+<style>
+    .user-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background-color: #fff;
+        transition: background-color 0.3s ease;
+    }
+
+    .user-card:hover {
+        background-color: #f9f9f9;
+    }
+
+    .user-card .avatar {
+        display: flex;
+        align-items: center;
+    }
+
+    .avatar img {
+        width: 35px;
+        height: 35px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .user-avatar i {
+        font-size: 35px;
+        margin-right: 10px;
+        color: #aaa;
+    }
+
+    .user-info {
+        flex-grow: 1;
+    }
+
+    .chat-icon {
+        color: #007bff;
+        font-size: 20px;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .chat-icon:hover {
+        color: #0056b3;
+    }
+
+    .search-bar {
+        margin-bottom: 20px;
+    }
+
+    .search-bar input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">People</h2>
+    
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" id="userSearch" placeholder="Search users by username..." onkeyup="filterUsers()">
+    </div>
+
+    <!-- Users List -->
+    <div id="usersList">
+        {% for user in users %}
+        <div class="user-card">
+            <div class="avatar">
+                {% if user|recently_active_users %}
+                <i class="fa-solid fa-circle fa-2xs" style="color: #04f1aa;"></i>
+                {% else %}
+                <i class="fa-solid fa-circle fa-2xs" style="color: #e60f6c;"></i>
+                {% endif %}
+                {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="User Avatar" class="user-avatar ms-2">
+                {% else %}
+                <i class="fas fa-user-circle user-avatar ms-2"></i>
+                {% endif %}
+                <div class="user-info">
+                    <strong>{{ user.username }}</strong>
+                </div>
+            </div>
+            <a href="{% url 'start_conversation' user.id %}">
+                <i class="fas fa-comment-dots chat-icon"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- JavaScript for Search Functionality -->
+<script>
+    function filterUsers() {
+        const searchInput = document.getElementById('userSearch').value.toLowerCase();
+        const usersList = document.getElementById('usersList');
+        const userCards = usersList.getElementsByClassName('user-card');
+
+        Array.from(userCards).forEach(card => {
+            const username = card.querySelector('.user-info strong').textContent.toLowerCase();
+            card.style.display = username.includes(searchInput) ? 'flex' : 'none';
+        });
+    }
+</script>
+{% endblock %}

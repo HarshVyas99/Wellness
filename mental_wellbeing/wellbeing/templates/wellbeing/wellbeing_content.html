@@ -1,0 +1,210 @@
+<!-- meditation_page.html -->
+{% extends 'base.html' %}
+
+{% block style %}
+<style>
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 350px;  /* Ensure cards have at least this height */
+    }
+
+    .content-media {
+        flex-grow: 1;  /* Allow the media section to grow and fill available space */
+    }
+
+    /* For images */
+    .card-body img {
+        object-fit: cover;
+        height: 200px;  /* Set fixed height for images */
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    /* For videos */
+    .card-body video {
+        object-fit: cover;
+        height: 200px;  /* Set fixed height for videos */
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    /* Make the iframe for external video responsive */
+    .embed-responsive {
+        position: relative;
+        display: block;
+        width: 100%;
+        padding: 56.25% 0 0 0;
+        height: 0;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .embed-responsive-item {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+
+    .card-text {
+        font-size: 0.95rem;
+    }
+
+    .btn-info {
+        margin-top: 10px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .pagination .page-link {
+        display: inline-block;
+        padding: 10px 15px;
+        margin: 0 5px;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        color: #343a40;
+        text-decoration: none;
+    }
+    .pagination .page-link:hover {
+        background-color: #343a40;
+        color: white;
+    }
+    .pagination .active {
+        background-color: #343a40;
+        color: white;
+        font-weight: bold;
+    }
+    .pagination .page-link.disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center mb-4">Guided Meditation,Breathing Exercises, Mental Wellbeing & More</h2>
+
+        <!-- Search and Filter Form -->
+        <form method="get" class="mb-4">
+            <div class="d-flex justify-content-between mb-4">
+                <!-- Search Bar -->
+                <div class="input-group" style="max-width: 500px;">
+                    <input type="text" class="form-control" placeholder="Search or content by title or description" name="search" value="{{ search_query }}">
+                    <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+                    {% if show_clear_filter %}
+                    <a href="."><i class="fa-solid fa-filter-circle-xmark fa-xl ms-2 p-2" style="color: #343a40;"></i></a>
+                    {% endif %}
+                </div>
+            </div>        
+                <!-- Filter and Sort Dropdowns -->
+                <div class="d-flex align-items-center">
+                    <!-- Content Type Filter -->
+                    <div class="input-group mx-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?content_type=">All Content Types</a></li>
+                            <li><a class="dropdown-item" href="?content_type=article">Article</a></li>
+                            <li><a class="dropdown-item" href="?content_type=self_care_tip">Self-care Tip</a></li>
+                            <li><a class="dropdown-item" href="?content_type=practice">Practice</a></li>
+                            <li><a class="dropdown-item" href="?content_type=resource">Resource</a></li>
+                            <li><a class="dropdown-item" href="?content_type=video">Video</a></li>
+                        </ul>
+                    </div>
+        
+                    <!-- Sort By Dropdown -->
+                    <div class="input-group mx-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-sort"></i> Sort
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?sort_by=title">Title</a></li>
+                            <li><a class="dropdown-item" href="?sort_by=date">Date</a></li>
+                        </ul>
+                    </div>
+            </div>
+        </form>
+    <div class="row">
+        {% for content in wellbeing_content %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ content.title }}</h5>
+                        <p class="card-text">{% if content.content_type == 'self_care_tip' %} Self Care Tip {% else %} {{content.content_type|title}} {% endif %}: {{content.title|title}}</p>
+                        <p class="card-text">Published At: {{content.created_at}}</p>
+                        <p>{{ content.description }}</p>
+                        <!-- Video or Image content -->
+                        <div class="content-media mb-3">
+                            {% if content.video_url %}
+                                <!-- Embed external video (YouTube, Vimeo) -->
+                                <div class="embed-responsive embed-responsive-16by9">
+                                    <iframe class="embed-responsive-item" src="{{ content.video_url }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            {% endif %}
+                            {% if content.video_file %}
+                                <!-- Display uploaded video -->
+                                <video class="img-fluid" controls width="100%">
+                                    <source src="{{ content.video_file.url }}" type="video/mp4">
+                                    Your browser does not support the video element.
+                                </video>
+                            {% endif %}
+                            {% if content.image %}
+                                <!-- Display image -->
+                                <img src="{{ content.image.url }}" alt="Breathing Exercise Image" class="img-fluid mb-3">
+                            {% endif %}
+                        </div>
+                        <!-- URL button -->
+                        {% if content.url %}
+                            <a href="{{ content.url }}" target="_blank" class="btn btn-secondary" >Visit</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No content available yet.</p>
+        {% endfor %}
+    </div>
+    <!-- Pagination Controls -->
+    <div class="pagination d-flex justify-content-center mt-4">
+        {% if wellbeing_content.has_previous %}
+            <a href="?page=1" class="page-link">&laquo; First</a>
+            <a href="?page={{ wellbeing_content.previous_page_number }}" class="page-link">Prev</a>
+        {% endif %}
+        
+        <!-- Display page numbers with active class -->
+        {% for num in wellbeing_content.paginator.page_range %}
+            {% if wellbeing_content.number == num %}
+                <span class="page-link active">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if wellbeing_content.has_next %}
+            <a href="?page={{ wellbeing_content.next_page_number }}" class="page-link">Next</a>
+            <a href="?page={{ wellbeing_content.paginator.num_pages }}" class="page-link">Last &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -190,42 +190,56 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        {% if user|is_doctor %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'doctor_inbox' %}">Inbox</a>
+                            <a class="nav-link" href="{% url 'about_us' %}">Home</a>
                         </li>
-                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'user_inbox' %}"><i class="fas fa-bell"></i>
+                                {% if unread_count > 0 %}
+                                <span class="badge badge-danger">{{ unread_count }}</span>
+                                {% endif %} Inbox
+                            </a>
+                        </li>
                         {% if user.is_superuser %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'quiz_list' %}">Quiz Store</a>
                         </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'quiz_for_today' %}">Take Quiz</a>
+                            <a class="nav-link" href="{% url 'quiz_for_today' %}">Mood Magic</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">View Profile</a>
+                            <a class="nav-link" href="{% url 'community' %}">Vibe Tribe</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'feed' %}">Feed</a>
+                            <a class="nav-link" href="{% url 'feed' %}">Vibe Tribe Feeds</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'wellbeing_page' %}">Vibe Guide</a>
                         </li>
                         {% if not user|is_doctor %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'active_doctors' %}">Chat with Doctor</a>
+                            <a class="nav-link" href="{% url 'active_doctors' %}">Wellness Wingman</a>
                         </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'about_us' %}">About Us</a>
+                            <a class="nav-link" href="{% url 'contact_us' %}">Contact Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">View Profile</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'about_us' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'about_us' %}">About Us</a>
+                            <a class="nav-link" href="{% url 'contact_us' %}">Contact Us</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'register' %}">Register</a>
@@ -248,7 +262,7 @@
     </div>
 
     <footer class="footer mt-5">
-        <p>&copy; 2024 Zenvibe. All rights reserved.</p>
+        <p>&copy; 2024 Zenvibe.<a href="{% url 'disclaimer' %}">Disclaimer</a></p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

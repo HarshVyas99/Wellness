@@ -1,30 +1,58 @@
 {% extends 'base.html' %}
 
-{% block title %}Profile{% endblock %}
 
 {% block content %}
-<h1>Welcome, {{ user.username }}</h1>
-<div class="card">
-    <div class="card-body">
-        <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
-        <p class="card-text"><strong>Date Joined:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
-    </div>
-</div>
+<div class="container my-5">
+    <h2 class="text-center mb-4">Your Profile</h2>
 
-<h2 class="mt-4">Your Mood Tracking History</h2>
-<ul>
-    {% for result in user_quiz_results %}
-        <li>
-            <strong>{{ result.quiz.title }} - Score: {{ result.score }}</strong><br>
-            <strong>Recommendations:</strong>
-            <ul>
-                {% for recommendation in result.recommendations.all %}
-                    <li>{{ recommendation.text }}</li>
-                {% endfor %}
-            </ul>
-        </li>
-    {% empty %}
-        <p>You have not taken any quizzes yet.</p>
-    {% endfor %}
-</ul>
+    {% if is_edit_mode %}
+    <!-- Edit Profile Form -->
+    <h3 class="text-center mb-4">Edit Profile</h3>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {{ form.as_table }}
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+    {% else %}
+        <!-- Profile Information Display (View Mode) -->
+        <div class="card shadow-sm p-3 mb-5 bg-white rounded">
+            <div class="card-body">
+                <h5 class="card-title">Welcome, {{ profile.user.username }}</h5>
+
+                {% if profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="img-fluid mb-3">
+                {% else %}
+                    <p>No profile picture</p>
+                {% endif %}
+                <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+                <p class="card-text"><strong>Date Joined:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+                <p class="card-text"><strong>Bio:</strong> {{ profile.bio }}</p>
+                <p class="card-text"><strong>Birthdate:</strong> {{ profile.birthdate }}</p>
+                <p class="card-text"><strong>Interests:</strong> {{ profile.get_interests_display }}</p>
+            </div>
+        </div>
+        
+        <!-- Button to switch to edit mode -->
+        <a href="?edit=true" class="btn btn-secondary">Edit Profile</a>
+    {% endif %}
+
+    <h2 class="mt-4">Your Mood Tracking History</h2>
+    <ul>
+        {% for result in user_quiz_results %}
+            <li>
+                <strong>{{ result.quiz.title }} - Score: {{ result.score }}</strong><br>
+                <strong>Recommendations:</strong>
+                <ul>
+                    {% for recommendation in result.recommendations.all %}
+                        <li>{{ recommendation.text }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% empty %}
+            <p>You have not taken any quizzes yet.</p>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}

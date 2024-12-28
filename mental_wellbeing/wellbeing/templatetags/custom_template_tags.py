@@ -1,5 +1,6 @@
 import datetime
 from django import template
+from django.utils.timezone import now, timedelta
 
 register = template.Library()
 
@@ -19,3 +20,8 @@ def is_doctor(user):
 @register.filter
 def is_admin(user):
     return user.groups.filter(name='Admins').exists()
+
+@register.filter
+def recently_active_users(user):
+    active_threshold = now() - timedelta(minutes=15)
+    return user.last_login>active_threshold if user and user.last_login else False
