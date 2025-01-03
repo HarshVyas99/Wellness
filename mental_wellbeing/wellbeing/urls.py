@@ -29,5 +29,9 @@ urlpatterns = [
     path('contact-us/', views.contact_view, name='contact_us'),
     path('wellbeing/', views.wellbeing_content_page, name='wellbeing_page'),
     path('disclaimer/', views.disclaimer_view, name='disclaimer'),
+    path('feedback/', views.submit_feedback, name='submit_feedback'),
+    path('admin-user/feedback/', views.view_feedback, name='admin_feedback_list'),
+    path('request-upgrade/', views.request_upgrade, name='request_upgrade'),
+    path('admin/upgrade-requests/', views.view_upgrade_requests, name='view_upgrade_requests'),
     path('', views.about_us, name='about_us'),
 ]

@@ -2,7 +2,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
-from wellbeing.models import Post, Profile, INTEREST_CHOICES
+from wellbeing.models import Post, Profile, INTEREST_CHOICES, Feedback
 from django.core.exceptions import ValidationError
 
 
@@ -114,4 +114,32 @@ class ContactEmailForm(forms.Form):
             'class': 'form-control',
             'placeholder': 'Enter your email address'
         })
+    )
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['category', 'rating', 'comments']
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'rating': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 5}),
+            'comments': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+
+from wellbeing.models import MembershipPlan
+
+class MembershipForm(forms.Form):
+    plan = forms.ModelChoiceField(
+        queryset=MembershipPlan.objects.all(),
+        widget=forms.RadioSelect,
+        empty_label=None,
+        label="Choose a Plan"
+    )
+    
+
+class MembershipUpgradeRequestForm(forms.Form):
+    requested_plan = forms.ModelChoiceField(
+        queryset=MembershipPlan.objects.exclude(name='basic'),
+        label="Choose Plan",
+        widget=forms.Select(attrs={'class': 'form-control'})
     )

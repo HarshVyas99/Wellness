@@ -38,6 +38,21 @@
         <a href="?edit=true" class="btn btn-secondary">Edit Profile</a>
     {% endif %}
 
+    <h2>Membership Details</h2>
+    {% if user_membership and user_membership.membership %}
+        <p>Plan: {{ user_membership.membership.name }}</p>
+        <p>Active Until: {{ user_membership.end_date|date:"M d, Y H:i" }}</p>
+        <p>Status: {% if user_membership.is_active %} Active {%else%} Expired {% endif %}</p>
+        {% if user_membership and user_membership.membership.name == 'basic' %}
+            <p>Time Remaining: {{ remaining_time }}</p>
+            <a href="{% url 'request_upgrade' %}">Upgrade Membership</a>
+        {% endif %}
+        <a href="{% url 'request_upgrade' %}">Change Plan</a>
+    {% else %}
+        <p>You are not subscribed to any membership plan.</p>
+        <a href="{% url 'request_upgrade' %}">Subscribe Now</a>
+    {% endif %}
+
     <h2 class="mt-4">Your Mood Tracking History</h2>
     <ul>
         {% for result in user_quiz_results %}
@@ -54,5 +69,31 @@
             <p>You have not taken any quizzes yet.</p>
         {% endfor %}
     </ul>
+
+    <h2>Your Submitted Feedback</h2>
+    <table border="1" cellspacing="0" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Rating</th>
+                <th>Comments</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in user_feedback %}
+            <tr>
+                <td>{{ feedback.get_category_display }}</td>
+                <td>{{ feedback.rating }}</td>
+                <td>{{ feedback.comments }}</td>
+                <td>{{ feedback.submitted_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No feedback submitted yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
