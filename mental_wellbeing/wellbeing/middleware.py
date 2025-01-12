@@ -9,7 +9,6 @@ class BasicMembershipMiddleware:
     def __call__(self, request):
         if request.user.is_authenticated:
             user_membership = getattr(request.user, 'usermembership', None)
-            print("user_membership",user_membership)
             if user_membership:
                 if user_membership.membership.name == 'basic' and not user_membership.is_active():
                     # Exclude 'profile' URL or any other URLs from the check

@@ -112,7 +112,6 @@ def profile_view(request):
         remaining_time = max(user_membership.end_date - now(), timedelta(0))  # Ensure non-negative
     # Fetch membership upgrade requests
     upgrade_requests = MembershipUpgradeRequest.objects.filter(user=request.user).order_by('-requested_on')
-    print("upgrade_requests",upgrade_requests)
     return render(request, 'wellbeing/profile.html', {'user_quiz_results': user_quiz_results, 'profile': profile, 'form': form, 'is_edit_mode': is_edit_mode, 'user_feedback': user_feedback, 'user_membership': user_membership, 'remaining_time': remaining_time, 'upgrade_requests': upgrade_requests})
 
 
@@ -565,7 +564,6 @@ from .forms import MembershipUpgradeRequestForm
 @login_required
 def request_upgrade(request):
     user_membership = getattr(request.user, 'usermembership', None)
-    print("user_membership",user_membership)
     # Ensure the user has an active membership
     if not user_membership:
         messages.error(request, "You do not have an active membership.")
