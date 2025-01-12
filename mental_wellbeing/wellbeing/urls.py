@@ -4,7 +4,6 @@ from wellbeing import views
 
 urlpatterns = [
     path("register/", views.register_view, name="register"),
-    # path("", views.quiz_view, name="quiz"),
     path("profile/", views.profile_view, name="profile"),
     path('feed/', views.feed_view, name='feed'),
     path('active-doctors/', views.active_doctors, name='active_doctors'),
@@ -32,6 +31,7 @@ urlpatterns = [
     path('feedback/', views.submit_feedback, name='submit_feedback'),
     path('admin-user/feedback/', views.view_feedback, name='admin_feedback_list'),
     path('request-upgrade/', views.request_upgrade, name='request_upgrade'),
-    path('admin/upgrade-requests/', views.view_upgrade_requests, name='view_upgrade_requests'),
+    path('user-upgrade-requests/<int:request_id>/approve/', views.approve_upgrade_request, name='approve_upgrade_request'),
+    path('user-upgrade-requests/', views.view_upgrade_requests, name='view_upgrade_requests'),
     path('', views.about_us, name='about_us'),
 ]

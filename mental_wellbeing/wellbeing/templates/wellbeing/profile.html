@@ -53,6 +53,47 @@
         <a href="{% url 'request_upgrade' %}">Subscribe Now</a>
     {% endif %}
 
+    <h2 class="mt-4">Membership Upgrade Requests</h2>
+    {% if upgrade_requests %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Requested Plan</th>
+                    <th>Requested On</th>
+                    <th>Status</th>
+                    <th>Processed On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in upgrade_requests %}
+                    <tr>
+                        <td>{{ request.requested_plan.name }}</td>
+                        <td>{{ request.requested_on|date:"M d, Y H:i" }}</td>
+                        <td>
+                            {% if request.is_approved %}
+                                Approved
+                            {% elif request.processed_on %}
+                                Rejected
+                            {% else %}
+                                Pending
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if request.processed_on %}
+                                {{ request.processed_on|date:"M d, Y H:i" }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You have not raised any membership upgrade requests yet.</p>
+    {% endif %}
+
+
     <h2 class="mt-4">Your Mood Tracking History</h2>
     <ul>
         {% for result in user_quiz_results %}
@@ -71,7 +112,7 @@
     </ul>
 
     <h2>Your Submitted Feedback</h2>
-    <table border="1" cellspacing="0" cellpadding="5">
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th>Category</th>
@@ -82,16 +123,17 @@
         </thead>
         <tbody>
             {% for feedback in user_feedback %}
-            <tr>
-                <td>{{ feedback.get_category_display }}</td>
-                <td>{{ feedback.rating }}</td>
-                <td>{{ feedback.comments }}</td>
-                <td>{{ feedback.submitted_at|date:"M d, Y" }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4">No feedback submitted yet.</td>
-            </tr>
+                <tr>
+                    <td>{{ feedback.get_category_display }}</td>
+                    <td>{{ feedback.rating }}</td>
+                    <td>{{ feedback.comments }}</td>
+                    <td>{{ feedback.submitted_at|date:"M d, Y" }}</td>
+                    <td>{{ request.requested_on|date:"M d, Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No feedback submitted yet.</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

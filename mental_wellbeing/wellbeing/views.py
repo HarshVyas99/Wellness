@@ -110,7 +110,10 @@ def profile_view(request):
     remaining_time = None
     if user_membership and user_membership.membership.name == 'basic':
         remaining_time = max(user_membership.end_date - now(), timedelta(0))  # Ensure non-negative
-    return render(request, 'wellbeing/profile.html', {'user_quiz_results': user_quiz_results, 'profile': profile, 'form': form, 'is_edit_mode': is_edit_mode, 'user_feedback': user_feedback, 'user_membership': user_membership, 'remaining_time': remaining_time})
+    # Fetch membership upgrade requests
+    upgrade_requests = MembershipUpgradeRequest.objects.filter(user=request.user).order_by('-requested_on')
+    print("upgrade_requests",upgrade_requests)
+    return render(request, 'wellbeing/profile.html', {'user_quiz_results': user_quiz_results, 'profile': profile, 'form': form, 'is_edit_mode': is_edit_mode, 'user_feedback': user_feedback, 'user_membership': user_membership, 'remaining_time': remaining_time, 'upgrade_requests': upgrade_requests})
 
 
 @login_required
@@ -562,7 +565,7 @@ from .forms import MembershipUpgradeRequestForm
 @login_required
 def request_upgrade(request):
     user_membership = getattr(request.user, 'usermembership', None)
-
+    print("user_membership",user_membership)
     # Ensure the user has an active membership
     if not user_membership:
         messages.error(request, "You do not have an active membership.")
@@ -572,7 +575,6 @@ def request_upgrade(request):
         form = MembershipUpgradeRequestForm(request.POST)
         if form.is_valid():
             requested_plan = form.cleaned_data['requested_plan']
-            notes = form.cleaned_data['notes']
 
             # Prevent duplicate requests for the same plan
             existing_request = MembershipUpgradeRequest.objects.filter(
@@ -588,7 +590,6 @@ def request_upgrade(request):
             MembershipUpgradeRequest.objects.create(
                 user=request.user,
                 requested_plan=requested_plan,
-                notes=notes
             )
             messages.success(request, "Your membership upgrade request has been submitted.")
             return redirect('profile')
@@ -597,6 +598,32 @@ def request_upgrade(request):
 
     return render(request, 'wellbeing/request_upgrade.html', {'form': form})
 
+@login_required
 def view_upgrade_requests(request):
     requests = MembershipUpgradeRequest.objects.filter(is_approved=False).order_by('-requested_on')
-    return render(request, 'wellbeing/view_upgrade_requests.html', {'requests': requests})
+    return render(request, 'wellbeing/view_upgrade_request.html', {'requests': requests})
+
+@login_required
+def approve_upgrade_request(request, request_id):
+    # Fetch the upgrade request
+    upgrade_request = get_object_or_404(MembershipUpgradeRequest, id=request_id, is_approved=False)
+    
+    # Get the user's current membership
+    user_membership = getattr(upgrade_request.user, 'usermembership', None)
+    if not user_membership:
+        messages.error(request, "User does not have an active membership.")
+        return redirect('view_upgrade_requests')
+    
+    # Update the user's membership
+    user_membership.membership = upgrade_request.requested_plan
+    user_membership.end_date += timedelta(minutes=upgrade_request.requested_plan.duration_minutes)  # Optionally extend membership duration
+    user_membership.save()
+
+    # Mark the request as approved
+    upgrade_request.is_approved = True
+    upgrade_request.processed_on = now()
+    upgrade_request.save()
+
+    # Provide feedback
+    messages.success(request, f"Upgrade request for {upgrade_request.user.username} has been approved.")
+    return redirect('view_upgrade_requests')
