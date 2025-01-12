@@ -36,6 +36,8 @@
         .nav-link {
             color: #343a40; /* Dark gray link text */
             transition: color 0.3s;
+            font-size: 0.875rem; /* Reduce font size */
+            padding: 0.5rem 0.75rem; /* Adjust padding for smaller items */
         }
 
         .nav-link:hover {
@@ -228,6 +230,19 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'profile' %}">View Profile</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'submit_feedback' %}">Feedback</a>
+                        </li>
+                        {% if user.is_superuser or user|is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin_feedback_list' %}">View Feedbacks</a>
+                        </li>
+                        {% endif %}
+                        {% if user.is_superuser or user|is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'view_upgrade_requests' %}">Approve Requests</a>
+                        </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                         </li>

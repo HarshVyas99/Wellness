@@ -16,6 +16,7 @@ from django.core.mail import send_mail
 from django.contrib import messages
 from django.conf import settings
 from django.core.paginator import Paginator
+from datetime import timedelta
 
 # Questionnaire and scoring logic
 QUESTIONS = [
@@ -104,7 +105,14 @@ def profile_view(request):
     else:
         form = ProfileForm(instance=profile)  # Prepopulate the form with the current profile data
 
-    return render(request, 'wellbeing/profile.html', {'user_quiz_results': user_quiz_results, 'profile': profile, 'form': form, 'is_edit_mode': is_edit_mode})
+    user_feedback = Feedback.objects.filter(user=request.user)
+    user_membership = getattr(request.user, 'usermembership', None)
+    remaining_time = None
+    if user_membership and user_membership.membership.name == 'basic':
+        remaining_time = max(user_membership.end_date - now(), timedelta(0))  # Ensure non-negative
+    # Fetch membership upgrade requests
+    upgrade_requests = MembershipUpgradeRequest.objects.filter(user=request.user).order_by('-requested_on')
+    return render(request, 'wellbeing/profile.html', {'user_quiz_results': user_quiz_results, 'profile': profile, 'form': form, 'is_edit_mode': is_edit_mode, 'user_feedback': user_feedback, 'user_membership': user_membership, 'remaining_time': remaining_time, 'upgrade_requests': upgrade_requests})
 
 
 @login_required
@@ -526,3 +534,94 @@ def wellbeing_content_page(request):
         'sort_by': sort_by,
         'show_clear_filter':show_clear_filter,
     })
+    
+from wellbeing.forms import FeedbackForm
+from wellbeing.models import Feedback
+
+@login_required
+def submit_feedback(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.user = request.user  # Associate feedback with the logged-in user
+            feedback.save()
+            messages.success(request, 'Thank you for your feedback!')
+            return redirect('about_us')  # Redirect to a relevant page, e.g., homepage
+    else:
+        form = FeedbackForm()
+    
+    return render(request, 'wellbeing/submit_feedback.html', {'form': form})
+
+@login_required
+def view_feedback(request):
+    feedback_list = Feedback.objects.all().order_by('-submitted_at')  # Show the latest feedback first
+    return render(request, 'wellbeing/admin_feedback.html', {'feedback_list': feedback_list})
+
+from .models import MembershipUpgradeRequest, MembershipPlan
+from .forms import MembershipUpgradeRequestForm
+
+@login_required
+def request_upgrade(request):
+    user_membership = getattr(request.user, 'usermembership', None)
+    # Ensure the user has an active membership
+    if not user_membership:
+        messages.error(request, "You do not have an active membership.")
+        return redirect('about_us')
+
+    if request.method == 'POST':
+        form = MembershipUpgradeRequestForm(request.POST)
+        if form.is_valid():
+            requested_plan = form.cleaned_data['requested_plan']
+
+            # Prevent duplicate requests for the same plan
+            existing_request = MembershipUpgradeRequest.objects.filter(
+                user=request.user,
+                requested_plan=requested_plan,
+                is_approved=False
+            ).first()
+            if existing_request:
+                messages.info(request, "You already have a pending upgrade request for this plan.")
+                return redirect('profile')
+
+            # Create the upgrade request
+            MembershipUpgradeRequest.objects.create(
+                user=request.user,
+                requested_plan=requested_plan,
+            )
+            messages.success(request, "Your membership upgrade request has been submitted.")
+            return redirect('profile')
+    else:
+        form = MembershipUpgradeRequestForm()
+
+    return render(request, 'wellbeing/request_upgrade.html', {'form': form})
+
+@login_required
+def view_upgrade_requests(request):
+    requests = MembershipUpgradeRequest.objects.filter(is_approved=False).order_by('-requested_on')
+    return render(request, 'wellbeing/view_upgrade_request.html', {'requests': requests})
+
+@login_required
+def approve_upgrade_request(request, request_id):
+    # Fetch the upgrade request
+    upgrade_request = get_object_or_404(MembershipUpgradeRequest, id=request_id, is_approved=False)
+    
+    # Get the user's current membership
+    user_membership = getattr(upgrade_request.user, 'usermembership', None)
+    if not user_membership:
+        messages.error(request, "User does not have an active membership.")
+        return redirect('view_upgrade_requests')
+    
+    # Update the user's membership
+    user_membership.membership = upgrade_request.requested_plan
+    user_membership.end_date += timedelta(minutes=upgrade_request.requested_plan.duration_minutes)  # Optionally extend membership duration
+    user_membership.save()
+
+    # Mark the request as approved
+    upgrade_request.is_approved = True
+    upgrade_request.processed_on = now()
+    upgrade_request.save()
+
+    # Provide feedback
+    messages.success(request, f"Upgrade request for {upgrade_request.user.username} has been approved.")
+    return redirect('view_upgrade_requests')

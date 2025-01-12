@@ -177,3 +177,61 @@ class MentalWellbeingContent(models.Model):
 
     def __str__(self):
         return self.title
+
+from django.db import models
+from django.contrib.auth.models import User
+
+class Feedback(models.Model):
+    CATEGORY_CHOICES = [
+        ('Mood Magic', 'Mood Magic'),
+        ('Vibe Guide', 'Vibe Guide'),
+        ('Wellness Wingman', 'Wellness Wingman'),
+        ('general', 'General Feedback'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    rating = models.IntegerField(default=1)  # 1 to 5 rating
+    comments = models.TextField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback from {self.user.username} - {self.category}"
+    
+class MembershipPlan(models.Model):
+    PLAN_CHOICES = [
+        ('basic', 'Basic'),
+        ('premium', 'Premium'),
+        ('vip', 'VIP'),
+    ]
+    name = models.CharField(max_length=50, choices=PLAN_CHOICES, unique=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)  # Basic is free
+    duration_minutes = models.PositiveIntegerField(default=20)  # Surfing time in minutes
+    features = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+    
+class UserMembership(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    membership = models.ForeignKey(MembershipPlan, on_delete=models.SET_NULL, null=True, blank=True)
+    start_date = models.DateTimeField(default=now)
+    end_date = models.DateTimeField()
+
+    def is_active(self):
+        return now() <= self.end_date
+
+    def __str__(self):
+        return f"{self.user.username} - {self.membership.name if self.membership else 'No Membership'}"
+    
+from django.utils.timezone import now
+
+class MembershipUpgradeRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='upgrade_requests')
+    requested_plan = models.ForeignKey('MembershipPlan', on_delete=models.CASCADE, related_name='upgrade_requests')
+    requested_on = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=False)
+    processed_on = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.requested_plan.name} on {self.requested_on.strftime('%Y-%m-%d %H:%M:%S')}"
